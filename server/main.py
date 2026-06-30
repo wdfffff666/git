@@ -44,9 +44,9 @@ class ModelInfo(BaseModel):
 # ── 模型列表 ──────────────────────────────
 
 MODEL_MAP = {
-    "qwen2-vl:2b":    {"type": "vision", "desc": "图像识别"},
-    "qwen2.5:7b":     {"type": "chat",   "desc": "通用对话"},
-    "qwen2.5-coder:3b": {"type": "code", "desc": "代码生成"},
+    "qwen2-vl:2b":       {"type": "vision", "desc": "图像识别"},
+    "qwen2.5:3b":        {"type": "chat",   "desc": "通用对话"},
+    "qwen2.5-coder:3b":  {"type": "code",   "desc": "代码生成"},
 }
 
 # ── API 路由 ──────────────────────────────
@@ -92,7 +92,7 @@ async def list_models():
         result.append({
             "name": name,
             "size": m.get("size", 0),
-            "size_mb": round(m.get("size", 0) / (1024*1024*1024), 1),
+            "size_gb": round(m.get("size", 0) / (1024*1024*1024), 1),
             "type": info["type"],
             "desc": info["desc"]
         })

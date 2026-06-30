@@ -294,7 +294,7 @@
 </div>
 
 <script>
-const API = 'http://localhost:8000';
+const API = window.location.protocol + '//' + window.location.hostname + ':8000';
 
 // ======== 导航 ========
 document.querySelectorAll('.nav-item').forEach(item => {
@@ -396,7 +396,9 @@ async function generateCode() {
   if (!prompt) return;
 
   const output = document.getElementById('codeOutput');
+  const btn = document.getElementById('codeBtn');
   output.innerHTML = '<div class="spinner"></div>';
+  btn.disabled = true;
 
   try {
     const r = await fetch(API + '/code', {
@@ -412,6 +414,7 @@ async function generateCode() {
   } catch (e) {
     output.textContent = '错误: ' + e.message;
   }
+  btn.disabled = false;
 }
 
 function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
