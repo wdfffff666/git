@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>家庭 AI 服务器</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f0f1a;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      width: 240px;
+      background: #16162a;
+      border-right: 1px solid #252545;
+      padding: 24px 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      padding: 0 24px 24px;
+      background: linear-gradient(90deg, #7b2ff7, #00d2ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-item {
+      padding: 12px 24px;
+      cursor: pointer;
+      color: #888;
+      transition: all 0.2s;
+      font-size: 15px;
+      border-left: 3px solid transparent;
+    }
+
+    .nav-item:hover { color: #ccc; background: #1a1a35; }
+    .nav-item.active { color: #fff; background: #1a1a35; border-left-color: #7b2ff7; }
+
+    .models-info {
+      margin-top: auto;
+      padding: 16px 24px;
+      font-size: 12px;
+      color: #555;
+      border-top: 1px solid #1f1f3a;
+    }
+
+    .main {
+      margin-left: 240px;
+      padding: 32px 40px;
+      max-width: 960px;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    h2 {
+      font-size: 22px;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
+    /* 对话区 */
+    .chat-box {
+      background: #16162a;
+      border-radius: 12px;
+      padding: 20px;
+      min-height: 400px;
+      max-height: 500px;
+      overflow-y: auto;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .msg {
+      max-width: 80%;
+      padding: 10px 16px;
+      border-radius: 10px;
+      line-height: 1.6;
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .msg.user { align-self: flex-end; background: #7b2ff7; color: #fff; }
+    .msg.ai { align-self: flex-start; background: #1e1e3a; }
+
+    .chat-input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .chat-input-row input {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid #333;
+      background: #16162a;
+      color: #e0e0e0;
+      font-size: 14px;
+    }
+
+    .chat-input-row input:focus { outline: none; border-color: #7b2ff7; }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-primary { background: linear-gradient(90deg, #7b2ff7, #00d2ff); color: #fff; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* 识图区 */
+    .vision-row {
+      display: flex;
+      gap: 20px;
+    }
+
+    .upload-area {
+      flex: 1;
+      border: 2px dashed #333;
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-height: 250px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .upload-area:hover { border-color: #7b2ff7; }
+    .upload-area img { max-width: 100%; max-height: 220px; border-radius: 8px; display: none; }
+
+    .vision-result {
+      flex: 1;
+      background: #16162a;
+      border-radius: 12px;
+      padding: 20px;
+      min-height: 250px;
+    }
+
+    .vision-result h3 { font-size: 13px; color: #00d2ff; margin-bottom: 10px; }
+
+    /* 代码区 */
+    .code-row {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .code-row textarea {
+      width: 100%;
+      padding: 16px;
+      border-radius: 10px;
+      border: 1px solid #333;
+      background: #16162a;
+      color: #e0e0e0;
+      font-size: 14px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .code-row textarea:focus { outline: none; border-color: #7b2ff7; }
+
+    .code-output {
+      background: #0a0a15;
+      border-radius: 10px;
+      padding: 20px;
+      min-height: 150px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      overflow-x: auto;
+      line-height: 1.6;
+    }
+
+    select {
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #16162a;
+      color: #e0e0e0;
+      font-size: 14px;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    .status-dot.online { background: #00ff88; }
+    .status-dot.offline { background: #ff4444; }
+
+    .spinner {
+      width: 24px; height: 24px;
+      border: 2px solid #333;
+      border-top-color: #7b2ff7;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">🏠 家庭 AI</div>
+
+  <div class="nav-item active" data-tab="chat">💬 AI 对话</div>
+  <div class="nav-item" data-tab="vision">🖼️ 图像识别</div>
+  <div class="nav-item" data-tab="code">💻 代码生成</div>
+
+  <div class="models-info">
+    <div><span class="status-dot" id="statusDot"></span><span id="statusText">检查中...</span></div>
+    <div style="margin-top:4px">本地模型 · 数据不出门</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ======= 对话 ======= -->
+  <div class="tab-content active" id="tab-chat">
+    <h2>💬 AI 对话</h2>
+    <div class="chat-box" id="chatBox">
+      <div class="msg ai">你好！我是本地 AI 助手，运行在这台电脑上。有什么可以帮你的？</div>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="chatInput" placeholder="输入消息，按回车发送..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="btn btn-primary" id="chatSendBtn" onclick="sendChat()">发送</button>
+    </div>
+  </div>
+
+  <!-- ======= 识图 ======= -->
+  <div class="tab-content" id="tab-vision">
+    <h2>🖼️ 图像识别</h2>
+    <div class="vision-row">
+      <div class="upload-area" id="visionUpload" onclick="document.getElementById('visionInput').click()">
+        <div id="visionPlaceholder">📷<br>点击上传图片</div>
+        <img id="visionPreview">
+      </div>
+      <div class="vision-result">
+        <h3>🔍 识别结果</h3>
+        <div id="visionResult">选择一张图片开始分析</div>
+        <div class="spinner" id="visionSpinner" style="display:none"></div>
+      </div>
+    </div>
+    <input type="file" id="visionInput" accept="image/*" style="display:none" onchange="handleVisionFile(this.files[0])">
+    <button class="btn btn-primary" id="visionBtn" style="display:none;margin-top:12px;width:100%" onclick="analyzeVision()">开始分析</button>
+  </div>
+
+  <!-- ======= 代码 ======= -->
+  <div class="tab-content" id="tab-code">
+    <h2>💻 代码生成</h2>
+    <div class="code-row">
+      <div style="display:flex;gap:10px">
+        <select id="codeLang">
+          <option value="Python">Python</option>
+          <option value="JavaScript">JavaScript</option>
+          <option value="HTML/CSS">HTML/CSS</option>
+          <option value="SQL">SQL</option>
+          <option value="Bash">Bash</option>
+        </select>
+      </div>
+      <textarea id="codePrompt" placeholder="描述你想要的功能，例如：读取一个JSON文件并统计其中每个字段出现的次数"></textarea>
+      <button class="btn btn-primary" id="codeBtn" onclick="generateCode()">生成代码</button>
+      <div class="code-output" id="codeOutput">// 生成的代码将显示在这里</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API = 'http://localhost:8000';
+
+// ======== 导航 ========
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById('tab-' + item.dataset.tab).classList.add('active');
+  });
+});
+
+// ======== 状态检查 ========
+async function checkHealth() {
+  try {
+    const r = await fetch(API + '/health');
+    const d = await r.json();
+    document.getElementById('statusDot').className = 'status-dot ' + (d.status === 'ok' ? 'online' : 'offline');
+    document.getElementById('statusText').textContent = d.status === 'ok' ? '服务正常' : '服务异常';
+  } catch {
+    document.getElementById('statusDot').className = 'status-dot offline';
+    document.getElementById('statusText').textContent = '后端未启动';
+  }
+}
+checkHealth();
+setInterval(checkHealth, 30000);
+
+// ======== 对话 ========
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  const box = document.getElementById('chatBox');
+  const btn = document.getElementById('chatSendBtn');
+
+  // 显示用户消息
+  box.innerHTML += `<div class="msg user">${escapeHtml(msg)}</div>`;
+  input.value = '';
+  box.scrollTop = box.scrollHeight;
+  btn.disabled = true;
+
+  // 占位
+  box.innerHTML += '<div class="msg ai" id="typing"><div class="spinner"></div></div>';
+  box.scrollTop = box.scrollHeight;
+
+  try {
+    const r = await fetch(API + '/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg, temperature: 0.7 })
+    });
+    const d = await r.json();
+    document.getElementById('typing').outerHTML = `<div class="msg ai">${escapeHtml(d.response)}</div>`;
+  } catch (e) {
+    document.getElementById('typing').outerHTML = `<div class="msg ai" style="color:#ff6b6b">错误: ${e.message}</div>`;
+  }
+
+  box.scrollTop = box.scrollHeight;
+  btn.disabled = false;
+}
+
+// ======== 识图 ========
+let visionFile = null;
+
+function handleVisionFile(file) {
+  visionFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('visionPreview').src = e.target.result;
+    document.getElementById('visionPreview').style.display = 'block';
+    document.getElementById('visionPlaceholder').style.display = 'none';
+    document.getElementById('visionBtn').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyzeVision() {
+  if (!visionFile) return;
+  document.getElementById('visionSpinner').style.display = 'block';
+  document.getElementById('visionResult').textContent = '';
+
+  const form = new FormData();
+  form.append('file', visionFile);
+
+  try {
+    const r = await fetch(API + '/vision', { method: 'POST', body: form });
+    const d = await r.json();
+    document.getElementById('visionResult').textContent = d.response;
+  } catch (e) {
+    document.getElementById('visionResult').textContent = '错误: ' + e.message;
+  }
+  document.getElementById('visionSpinner').style.display = 'none';
+}
+
+// ======== 代码生成 ========
+async function generateCode() {
+  const prompt = document.getElementById('codePrompt').value.trim();
+  if (!prompt) return;
+
+  const output = document.getElementById('codeOutput');
+  output.innerHTML = '<div class="spinner"></div>';
+
+  try {
+    const r = await fetch(API + '/code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt: prompt,
+        language: document.getElementById('codeLang').value
+      })
+    });
+    const d = await r.json();
+    output.textContent = d.code;
+  } catch (e) {
+    output.textContent = '错误: ' + e.message;
+  }
+}
+
+function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>
