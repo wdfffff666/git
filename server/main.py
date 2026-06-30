@@ -28,7 +28,7 @@ OLLAMA_URL = "http://localhost:11434"
 
 class ChatRequest(BaseModel):
     message: str
-    model: str = "qwen2.5-coder:3b"  # 默认对话模型（3B 对话模型下载后改为 qwen2.5:3b）
+    model: str = "qwen2.5:3b"  # 默认对话模型
     temperature: float = 0.7
 
 class CodeRequest(BaseModel):
