@@ -294,7 +294,7 @@
 </div>
 
 <script>
-const API = window.location.protocol + '//' + window.location.hostname + ':8000';
+const API = window.location.protocol === 'file:' ? 'http://localhost:8000' : window.location.protocol + '//' + window.location.hostname + ':8000';
 
 // ======== 导航 ========
 document.querySelectorAll('.nav-item').forEach(item => {
