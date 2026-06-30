@@ -7,7 +7,7 @@ import base64
 import time
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
 from pydantic import BaseModel
 import httpx
 import json
@@ -53,6 +53,11 @@ MODEL_MAP = {
 
 @app.get("/")
 def root():
+    """仪表盘首页"""
+    return FileResponse("C:/Users/Administrator/Desktop/git/dashboard.html")
+
+@app.get("/api")
+def api_info():
     return {
         "service": "家庭 AI 服务器",
         "status": "running",
