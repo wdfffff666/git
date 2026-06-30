@@ -270,7 +270,6 @@
       </div>
     </div>
     <input type="file" id="visionInput" accept="image/*" style="display:none" onchange="handleVisionFile(this.files[0])">
-    <button class="btn btn-primary" id="visionBtn" style="display:none;margin-top:12px;width:100%" onclick="analyzeVision()">开始分析</button>
   </div>
 
   <!-- ======= 代码 ======= -->
@@ -367,15 +366,16 @@ function handleVisionFile(file) {
     document.getElementById('visionPreview').src = e.target.result;
     document.getElementById('visionPreview').style.display = 'block';
     document.getElementById('visionPlaceholder').style.display = 'none';
-    document.getElementById('visionBtn').style.display = 'block';
   };
   reader.readAsDataURL(file);
+  // 自动开始分析，无需手动点击按钮
+  analyzeVision();
 }
 
 async function analyzeVision() {
   if (!visionFile) return;
   document.getElementById('visionSpinner').style.display = 'block';
-  document.getElementById('visionResult').textContent = '';
+  document.getElementById('visionResult').textContent = 'AI 正在分析图片...';
 
   const form = new FormData();
   form.append('file', visionFile);
@@ -385,7 +385,7 @@ async function analyzeVision() {
     const d = await r.json();
     document.getElementById('visionResult').textContent = d.response;
   } catch (e) {
-    document.getElementById('visionResult').textContent = '错误: ' + e.message;
+    document.getElementById('visionResult').textContent = '识别失败: ' + e.message + '\n\n请确认 Ollama 和 FastAPI 后端都在运行。';
   }
   document.getElementById('visionSpinner').style.display = 'none';
 }
